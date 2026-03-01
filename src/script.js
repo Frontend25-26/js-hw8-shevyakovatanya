@@ -5,6 +5,11 @@ let turn = "white";
 let gameOver = false;
 let killingPiece = null;
 let selectedCells = [];
+gameOver
+const moveSound = document.getElementById("moveSound");
+const captureSound = document.getElementById("captureSound");
+const queenSound = document.getElementById("queenSound");
+const gameOverSound = document.getElementById("gameOver");
 
 function createBoard() {
     for (let i = 0; i < 8; i++) {
@@ -81,7 +86,7 @@ function getCorrectMoves(piece) {
   
       return { isKillMove: false, moves: result };
     }
-    
+
     const dirs = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
     for (const [dr, dc] of dirs) {
       let r = fromRow + dr;
@@ -203,7 +208,12 @@ function movePiece(piece, cell) {
       (turn === "white" && piece.dataset.row === "0") ||
       (turn === "black" && piece.dataset.row === "7")
     ) {
-        piece.classList.add("queen");
+        if (!piece.classList.contains("queen")) {
+            piece.classList.add("queen");
+    
+            queenSound.currentTime = 0;
+            queenSound.play();
+        }
     }
 }
 
@@ -218,6 +228,9 @@ function checkAndShowWin() {
     let blackPiecesLoose = board.querySelectorAll(`.piece:not([data-dead="1"]).black`).length === 0;
     let whitePiecesLoose = board.querySelectorAll(`.piece:not([data-dead="1"]).white`).length === 0;
     if (!blackPiecesLoose && !whitePiecesLoose) return;
+
+    gameOverSound.currentTime = 0;
+    gameOverSound.play();
 
     gameOver = true;
     const gameOverElement = createElement("div", "gameOver");
@@ -237,6 +250,10 @@ function checkAndShowWin() {
 
 function killPiece(piece) {
     if (!piece) return;
+
+    captureSound.currentTime = 0;
+    captureSound.play();
+
     piece.classList.add("dying");
     piece.dataset.dead = "1";
     setTimeout(() => {
@@ -255,6 +272,11 @@ function checkAndMove(piece, cell) {
     const { isKillMove, moves } = getCorrectMoves(piece);
     const move = moves.find(m => m.row === toRow && m.col === toCol);
     if (!move) return;
+
+    if (!isKillMove) {
+        moveSound.currentTime = 0;
+        moveSound.play();
+    }
 
     movePiece(piece, cell);
 
